@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ValenciaGuard{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+<nav class="nav">
+  <span class="brand">ValenciaGuard</span>
+  <a href="/dashboard">Dashboard</a>
+  <a href="/properties">Propiedades</a>
+  <a href="/calendar">Calendario</a>
+  <a href="/owners">Propietarios</a>
+  <a href="/rent/calculator">Calculadora IRAV</a>
+  <a href="/ai-assistant">Asistente IA</a>
+  <a href="/settings">Ajustes</a>
+  <form method="post" action="/logout" class="inline">
+    <button type="submit" class="link">Salir</button>
+  </form>
+</nav>
+<main class="container">
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{% extends "portal/base.html" %}
+{% block content %}
+<h1>{{ prop.address }}</h1>
+<p class="muted">{{ prop.city }} {{ prop.postal_code }} · 状态：{{ status_zh.get(prop.status, prop.status) }}</p>
+<p><a href="/owner-portal">← 返回首页</a> ·
+   <a href="/owner-portal/properties/{{ prop.id }}/report" target="_blank">下载本月报告 (PDF)</a></p>
+
+{% if contract %}
+<h2>合同状态</h2>
+<dl class="grid">
+  <dt>合同类型</dt><dd>{{ contract.contract_type }}</dd>
+  <dt>开始日期</dt><dd>{{ contract.start_date | date }}</dd>
+  <dt>月租金</dt><dd>{{ contract.rent_amount | money }}</dd>
+  <dt>法定最短期限届满</dt><dd>{{ contract.mandatory_end_date | date }}</dd>
+  <dt>提前通知截止日</dt><dd><strong>{{ contract.notice_deadline_date | date }}</strong>
+    {% if countdown is not none %}
+      {% if countdown >= 0 %}<span class="muted">（还剩 {{ countdown }} 天）</span>
+      {% else %}<span class="error">（已过期 {{ -countdown }} 天）</span>{% endif %}
+    {% endif %}</dd>
+  <dt>下次租金调整日</dt><dd>{{ contract.next_rent_update_date | date }}</dd>
+  <dt>默示续期截止</dt><dd>{{ contract.tacit_renewal_end_date | date }}</dd>
+</dl>
+{% endif %}
+
+<h2>租金记录</h2>
+<table>
+  <tr><th>月份</th><th>应收</th><th>实收</th><th>支付日期</th><th>状态</th></tr>
+  {% for r in rent_records %}
+  <tr>
+    <td>{{ r.month.strftime('%Y-%m') }}</td>
+    <td>{{ r.amount_due | money }}</td>
+    <td>{{ r.amount_paid | money }}</td>
+    <td>{{ r.paid_date | date }}</td>
+    <td>{{ {'paid': '已支付', 'pending': '待支付', 'late': '逾期'}.get(r.status, r.status) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% if not rent_records %}<p class="muted">暂无租金记录。</p>{% endif %}
+
+<h2>维修记录</h2>
+<table>
+  <tr><th>日期</th><th>类别</th><th>描述</th><th>状态</th><th>费用</th></tr>
+  {% for i in issues %}
+  <tr>
+    <td>{{ i.created_at.strftime('%Y-%m-%d') }}</td>
+    <td>{{ i.category }}</td>
+    <td>{{ i.description }}</td>
+    <td>{{ {'open': '待处理', 'in_progress': '处理中', 'resolved': '已解决', 'closed': '已关闭'}.get(i.status, i.status) }}</td>
+    <td>{{ i.cost | money }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% if not issues %}<p class="muted">暂无维修记录。</p>{% endif %}
+
+<h2>文件</h2>
+<table>
+  <tr><th>文件名</th><th>类别</th><th>上传日期</th><th></th></tr>
+  {% for d in documents %}
+  <tr>
+    <td>{{ d.filename }}</td>
+    <td>{{ d.category }}</td>
+    <td>{{ d.upload_date.strftime('%Y-%m-%d') }}</td>
+    <td><a href="/owner-portal/documents/{{ d.id }}/download">下载</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% if not documents %}<p class="muted">暂无文件。</p>{% endif %}
+{% endblock %}

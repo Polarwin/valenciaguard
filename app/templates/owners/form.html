@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Nuevo propietario</h1>
+<form method="post" action="/owners" class="form">
+  <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
+  <label>Nombre <input name="name" required></label>
+  <label>Email <input name="email" type="email"></label>
+  <label>Teléfono <input name="phone"></label>
+  <label>WeChat <input name="wechat"></label>
+  <label>Notas <textarea name="notes"></textarea></label>
+  <fieldset>
+    <legend>Cuenta del portal (opcional)</legend>
+    <label>Usuario <input name="username"></label>
+    <label>Contraseña <input name="password" type="password"></label>
+  </fieldset>
+  <button type="submit">Guardar</button>
+</form>
+{% endblock %}

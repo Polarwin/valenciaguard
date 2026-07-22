@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Propietarios <a class="btn" href="/owners/new">+ Nuevo</a></h1>
+<table>
+  <tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>WeChat</th><th>Usuario portal</th><th>Notas</th></tr>
+  {% for o in owners %}
+  <tr>
+    <td>{{ o.name }}</td>
+    <td>{{ o.email }}</td>
+    <td>{{ o.phone }}</td>
+    <td>{{ o.wechat }}</td>
+    <td>{{ users.get(o.user_id).username if o.user_id and users.get(o.user_id) else '—' }}</td>
+    <td>{{ o.notes }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% if not owners %}<p class="muted">No hay propietarios.</p>{% endif %}
+{% endblock %}

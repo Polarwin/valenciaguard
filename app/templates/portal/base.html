@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ValenciaGuard 业主门户{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<nav class="nav">
+  <span class="brand">ValenciaGuard 业主门户</span>
+  <a href="/owner-portal">首页</a>
+  <form method="post" action="/logout" class="inline">
+    <button type="submit" class="link">退出登录</button>
+  </form>
+</nav>
+<main class="container">
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Calculadora de actualización de renta (IRAV {{ '%.2f' | format(rate * 100) }} %)</h1>
+<form method="post" action="/rent/calculator" class="form">
+  <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
+  <label>Renta actual (€) <input type="number" step="0.01" name="current_rent" required></label>
+  <label>Nombre del inquilino <input name="tenant_name"></label>
+  <label>Dirección de la vivienda <input name="address"></label>
+  <button type="submit">Calcular y generar carta</button>
+</form>
+{% if result %}
+<div class="panel">
+  <p>Incremento máximo legal: <strong>{{ result.increase | money }}</strong></p>
+  <p>Nueva renta: <strong>{{ result.new_rent | money }}</strong></p>
+</div>
+<h2>Carta de notificación (español)</h2>
+<pre class="letter">{{ letter }}</pre>
+{% endif %}
+{% endblock %}

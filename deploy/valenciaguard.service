@@ -1,0 +1,16 @@
+[Unit]
+Description=ValenciaGuard property management app
+After=network.target
+
+[Service]
+Type=simple
+User=valenciaguard
+Group=valenciaguard
+WorkingDirectory=/opt/valenciaguard
+EnvironmentFile=/opt/valenciaguard/.env
+ExecStart=/opt/valenciaguard/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

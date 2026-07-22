@@ -1,0 +1,8 @@
+<div class="chat-turn">
+  <p class="chat-q"><strong>Tú:</strong> {{ question }}</p>
+  <div class="chat-a">
+    {% if not ai_available %}<p class="muted">(modo sin API Kimi — respuesta de ejemplo)</p>{% endif %}
+    {% if context_used %}<p class="muted">Contexto de propiedad incluido.</p>{% endif %}
+    <pre class="answer">{{ answer }}</pre>
+  </div>
+</div>
