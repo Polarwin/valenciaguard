@@ -17,3 +17,13 @@ def fmt_money(value) -> str:
 
 templates.env.filters["date"] = fmt_date
 templates.env.filters["money"] = fmt_money
+
+
+# available in every template as {{ prefix }} — "" at root, "/valenciaguard"
+# when mounted under a subpath. root_path is fixed per process (from env).
+from .config import settings  # noqa: E402
+from .i18n import lang_proxy, t  # noqa: E402
+
+templates.env.globals["prefix"] = settings.root_path
+templates.env.globals["t"] = t
+templates.env.globals["lang"] = lang_proxy

@@ -2,11 +2,11 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from sqlmodel import Session
 
 from ..audit import log_action
-from ..auth import csrf_protect, require_admin
+from ..auth import csrf_protect, redirect, require_admin
 from ..config import settings
 from ..database import get_session
 from ..models import Property, RentRecord, User, calculate_rent_increase
@@ -40,7 +40,7 @@ def add_rent_record(
     session.commit()
     session.refresh(record)
     log_action(session, user, "create", "rent_record", record.id, f"{month} {amount_due}€")
-    return RedirectResponse(f"/properties/{property_id}#rent", status_code=303)
+    return redirect(f"/properties/{property_id}#rent")
 
 
 @router.post("/rent/{record_id}/pay", response_class=HTMLResponse)

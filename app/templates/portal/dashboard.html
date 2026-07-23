@@ -1,25 +1,25 @@
 {% extends "portal/base.html" %}
 {% block content %}
-<h1>尊敬的{{ owner.name }}，您好</h1>
+<h1>{{ t("portal.greeting", name=owner.name) }}</h1>
 <div class="cards">
-  <div class="card"><strong>{{ properties | length }}</strong><span>房产数量</span></div>
-  <div class="card"><strong>{{ total_rent | money }}</strong><span>本月应收租金</span></div>
-  <div class="card"><strong>{{ occupancy }}%</strong><span>出租率</span></div>
-  <div class="card warn"><strong>{{ pending_issues }}</strong><span>待处理维修</span></div>
+  <div class="card"><strong>{{ properties | length }}</strong><span>{{ t("portal.properties_count") }}</span></div>
+  <div class="card"><strong>{{ total_rent | money }}</strong><span>{{ t("portal.month_rent") }}</span></div>
+  <div class="card"><strong>{{ occupancy }}%</strong><span>{{ t("portal.occupancy") }}</span></div>
+  <div class="card warn"><strong>{{ pending_issues }}</strong><span>{{ t("portal.pending_issues") }}</span></div>
 </div>
 
-<h2>我的房产</h2>
+<h2>{{ t("portal.my_properties") }}</h2>
 <table>
-  <tr><th>地址</th><th>城市</th><th>状态</th><th>当前估值</th><th></th></tr>
+  <tr><th>{{ t("props.address") }}</th><th>{{ t("props.city") }}</th><th>{{ t("common.status") }}</th><th>{{ t("props.value") }}</th><th></th></tr>
   {% for p in properties %}
   <tr>
     <td>{{ p.address }}</td>
     <td>{{ p.city }} {{ p.postal_code }}</td>
-    <td>{{ status_zh.get(p.status, p.status) }}</td>
+    <td>{{ t("status." ~ p.status) }}</td>
     <td>{{ p.current_value_estimate | money }}</td>
-    <td><a href="/owner-portal/properties/{{ p.id }}">查看详情</a></td>
+    <td><a href="{{ prefix }}/owner-portal/properties/{{ p.id }}">{{ t("portal.view_detail") }}</a></td>
   </tr>
   {% endfor %}
 </table>
-{% if not properties %}<p class="muted">暂无房产。</p>{% endif %}
+{% if not properties %}<p class="muted">{{ t("props.empty") }}</p>{% endif %}
 {% endblock %}

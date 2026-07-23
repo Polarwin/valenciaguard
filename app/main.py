@@ -4,19 +4,19 @@ from datetime import date
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse
 from sqlmodel import Session, select
 from starlette.middleware.sessions import SessionMiddleware
 
-from .auth import ensure_csrf_token, csrf_protect, require_admin, require_user
+from .auth import ensure_csrf_token, csrf_protect, redirect, require_admin, require_user
 from .config import settings
 from .database import get_session, init_db
 from .models import (
     Alert, AuditLog, Contract, Issue, Property, RentRecord, Settings, Tenant, User,
 )
-from .routers import ai, auth, contracts, documents, issues, owners, portal, properties, rent, tenants
+from .routers import ai, auth, contracts, documents, issues, owners, portal, properties, rent, tenants, users
+from .i18n import SUPPORTED_LANGUAGES, language_from_cookies, set_language, t
 from .services import alerts as alert_service
 from .services import ai_service
 from .templates_config import templates
@@ -31,7 +31,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="ValenciaGuard", lifespan=lifespan)
+app = FastAPI(title="ValenciaGuard", lifespan=lifespan,
+              root_path=settings.root_path)
 
 
 @app.middleware("http")
@@ -42,23 +43,81 @@ async def csrf_token_middleware(request: Request, call_next):
     return await call_next(request)
 
 
-# must wrap the middleware above so request.session is available inside it
-app.add_middleware(SessionMiddleware, secret_key=settings.secret_key, https_only=False)
+class LanguageMiddleware:
+    """Pure-ASGI middleware: sets the i18n contextvar from the vg_lang cookie.
+
+    Pure ASGI (not BaseHTTPMiddleware) so the contextvar reliably propagates
+    into sync endpoints and template rendering.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            set_language(language_from_cookies(Request(scope).cookies))
+        await self.app(scope, receive, send)
 
 
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+# must wrap the middleware above so request.session is available inside it.
+# Unique cookie name + prefix-scoped path so the cookie does not collide with
+# sibling apps sharing the same hostname behind the reverse proxy.
+app.add_middleware(LanguageMiddleware)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.secret_key,
+    https_only=False,
+    session_cookie="vg_session",
+    path=settings.root_path + "/" if settings.root_path else "/",
+)
+
+
+# Static files: a plain route instead of a StaticFiles Mount, because Mount +
+# root_path breaks path resolution when the reverse proxy strips the prefix
+# (requests arrive root-relative). A plain route matches both prefixed and
+# unprefixed request paths.
+STATIC_DIR = (BASE_DIR / "static").resolve()
+
+
+@app.get("/static/{file_path:path}", include_in_schema=False)
+def static_files(file_path: str):
+    full = (STATIC_DIR / file_path).resolve()
+    if not str(full).startswith(str(STATIC_DIR)) or not full.is_file():
+        raise HTTPException(status_code=404)
+    return FileResponse(full)
 
 for r in (auth.router, properties.router, tenants.router, contracts.router,
           rent.router, issues.router, documents.router, owners.router,
-          ai.router, portal.router):
+          ai.router, portal.router, users.router):
     app.include_router(r)
 
 
 @app.get("/", include_in_schema=False)
 def root(user: User | None = Depends(require_user)):
     if user.role == "admin":
-        return RedirectResponse("/dashboard", status_code=303)
-    return RedirectResponse("/owner-portal", status_code=303)
+        return redirect("/dashboard")
+    return redirect("/owner-portal")
+
+
+@app.get("/set-language/{lang}", include_in_schema=False)
+def set_language_route(lang: str, next: str = "/"):
+    """Set the vg_lang cookie and bounce back. `next` must be a local path."""
+    if lang not in SUPPORTED_LANGUAGES:
+        lang = "es"
+    if not next.startswith("/") or next.startswith("//"):
+        next = "/"
+    # templates pass the raw (possibly prefix-carrying) browser path; strip
+    # the deployment prefix so redirect() can re-add it exactly once
+    if settings.root_path and next.startswith(settings.root_path + "/"):
+        next = next[len(settings.root_path):]
+    resp = redirect(next)
+    resp.set_cookie(
+        "vg_lang", lang,
+        max_age=365 * 24 * 3600,
+        path=settings.root_path + "/" if settings.root_path else "/",
+        httponly=True,
+    )
+    return resp
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -120,24 +179,24 @@ def calendar(
     for c in session.exec(select(Contract)).all():
         addr = prop_map.get(c.property_id).address if prop_map.get(c.property_id) else "?"
         for label, d in (
-            ("Fin obligatorio contrato (LAU)", c.mandatory_end_date),
-            ("Límite preaviso 4 meses", c.notice_deadline_date),
-            ("Actualización de renta", c.next_rent_update_date),
-            ("Fin prórroga tácita", c.tacit_renewal_end_date),
+            (t("cal.contract_end"), c.mandatory_end_date),
+            (t("cal.notice_deadline"), c.notice_deadline_date),
+            (t("cal.rent_update"), c.next_rent_update_date),
+            (t("cal.tacit_end"), c.tacit_renewal_end_date),
         ):
             if d:
                 events.append({"date": d, "label": label, "detail": addr,
                                "url": f"/properties/{c.property_id}"})
-    for t in session.exec(select(Tenant)).all():
-        if t.insurance_expiry:
-            addr = prop_map.get(t.property_id).address if prop_map.get(t.property_id) else "?"
-            events.append({"date": t.insurance_expiry, "label": "Vencimiento seguro",
-                           "detail": f"{addr} — {t.insurance_policy_number}",
-                           "url": f"/properties/{t.property_id}"})
+    for ten in session.exec(select(Tenant)).all():
+        if ten.insurance_expiry:
+            addr = prop_map.get(ten.property_id).address if prop_map.get(ten.property_id) else "?"
+            events.append({"date": ten.insurance_expiry, "label": t("cal.insurance_expiry"),
+                           "detail": f"{addr} — {ten.insurance_policy_number}",
+                           "url": f"/properties/{ten.property_id}"})
     for r in session.exec(select(RentRecord).where(RentRecord.status != "paid")).all():
         addr = prop_map.get(r.property_id).address if prop_map.get(r.property_id) else "?"
         due = date(r.month.year, r.month.month, alert_service.RENT_DUE_DAY)
-        events.append({"date": due, "label": "Vencimiento alquiler",
+        events.append({"date": due, "label": t("cal.rent_due"),
                        "detail": f"{addr} — {r.amount_due:.2f} €",
                        "url": f"/properties/{r.property_id}"})
     events.sort(key=lambda e: e["date"])
@@ -202,7 +261,7 @@ def save_settings(
             row = Settings(key=key, value=value)
         session.add(row)
     session.commit()
-    return RedirectResponse("/settings", status_code=303)
+    return redirect("/settings")
 
 
 if __name__ == "__main__":

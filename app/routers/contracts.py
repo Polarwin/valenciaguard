@@ -4,12 +4,13 @@ from datetime import date
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from sqlmodel import Session, select
 
 from ..audit import log_action
-from ..auth import csrf_protect, require_admin
+from ..auth import csrf_protect, redirect, require_admin
 from ..database import get_session
+from ..i18n import t as _t
 from ..models import Contract, Property, User, compute_contract_dates
 from ..services import ai_service, document_parser
 from ..templates_config import templates
@@ -60,7 +61,7 @@ def create_contract(
     session.refresh(contract)
     log_action(session, user, "create", "contract", contract.id,
                f"property {property_id}, start {contract.start_date}")
-    return RedirectResponse(f"/properties/{property_id}#contract", status_code=303)
+    return redirect(f"/properties/{property_id}#contract")
 
 
 @router.post("/{contract_id}/delete")
@@ -78,7 +79,7 @@ def delete_contract(
     session.delete(contract)
     session.commit()
     log_action(session, user, "delete", "contract", contract_id)
-    return RedirectResponse(f"/properties/{property_id}#contract", status_code=303)
+    return redirect(f"/properties/{property_id}#contract")
 
 
 @router.post("/parse", response_class=HTMLResponse)
@@ -96,7 +97,7 @@ async def parse_contract_upload(
     if ext != "pdf" or document_parser.sniff_is_executable(data):
         return templates.TemplateResponse(request, 
             "partials/contract_parse.html",
-            {"request": request, "result": None, "error": "Solo se aceptan PDF válidos."},
+            {"request": request, "result": None, "error": _t("contract.parse_error")},
         )
     import tempfile
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tmp:

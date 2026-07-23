@@ -14,7 +14,6 @@ from ..templates_config import templates
 
 router = APIRouter(prefix="/owner-portal", tags=["portal"])
 
-STATUS_ZH = {"occupied": "已出租", "vacant": "空置", "pending_handover": "待交接"}
 
 
 def _scoped_property(session: Session, owner: Owner, property_id: int) -> Property:
@@ -60,7 +59,6 @@ def portal_dashboard(
             "request": request, "user": user, "owner": owner,
             "properties": properties, "total_rent": total_rent,
             "occupancy": occupancy, "pending_issues": pending_issues,
-            "status_zh": STATUS_ZH,
         },
     )
 
@@ -98,7 +96,7 @@ def portal_property_detail(
         {
             "request": request, "user": user, "owner": owner, "prop": prop,
             "rent_records": rent_records, "issues": issues, "documents": documents,
-            "contract": contract, "countdown": countdown, "status_zh": STATUS_ZH,
+            "contract": contract, "countdown": countdown,
             "today": date.today(),
         },
     )

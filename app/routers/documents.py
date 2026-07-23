@@ -3,11 +3,11 @@ import os
 import uuid
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse
 from sqlmodel import Session
 
 from ..audit import log_action
-from ..auth import csrf_protect, require_admin
+from ..auth import csrf_protect, redirect, require_admin
 from ..config import settings
 from ..database import get_session
 from ..models import Document, Property, User
@@ -65,7 +65,7 @@ async def upload_document(
     session.commit()
     session.refresh(doc)
     log_action(session, user, "create", "document", doc.id, doc.filename)
-    return RedirectResponse(f"/properties/{property_id}#documents", status_code=303)
+    return redirect(f"/properties/{property_id}#documents")
 
 
 @router.get("/{document_id}/download")
@@ -100,4 +100,4 @@ def delete_document(
     session.delete(doc)
     session.commit()
     log_action(session, user, "delete", "document", document_id, doc.filename)
-    return RedirectResponse(f"/properties/{property_id}#documents", status_code=303)
+    return redirect(f"/properties/{property_id}#documents")

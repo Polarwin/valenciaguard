@@ -3,11 +3,10 @@ from datetime import date
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
 
 from ..audit import log_action
-from ..auth import csrf_protect, require_admin
+from ..auth import csrf_protect, redirect, require_admin
 from ..database import get_session
 from ..models import Property, Tenant, User
 
@@ -68,4 +67,4 @@ def save_tenant(
     session.commit()
     session.refresh(tenant)
     log_action(session, user, action, "tenant", tenant.id, tenant.name)
-    return RedirectResponse(f"/properties/{property_id}#tenant", status_code=303)
+    return redirect(f"/properties/{property_id}#tenant")

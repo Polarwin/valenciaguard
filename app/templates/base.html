@@ -1,24 +1,30 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ lang }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}ValenciaGuard{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="{{ prefix }}/static/style.css">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 <body>
 <nav class="nav">
   <span class="brand">ValenciaGuard</span>
-  <a href="/dashboard">Dashboard</a>
-  <a href="/properties">Propiedades</a>
-  <a href="/calendar">Calendario</a>
-  <a href="/owners">Propietarios</a>
-  <a href="/rent/calculator">Calculadora IRAV</a>
-  <a href="/ai-assistant">Asistente IA</a>
-  <a href="/settings">Ajustes</a>
-  <form method="post" action="/logout" class="inline">
-    <button type="submit" class="link">Salir</button>
+  <a href="{{ prefix }}/dashboard">{{ t("nav.dashboard") }}</a>
+  <a href="{{ prefix }}/properties">{{ t("nav.properties") }}</a>
+  <a href="{{ prefix }}/calendar">{{ t("nav.calendar") }}</a>
+  <a href="{{ prefix }}/owners">{{ t("nav.owners") }}</a>
+  <a href="{{ prefix }}/users">{{ t("nav.users") }}</a>
+  <a href="{{ prefix }}/rent/calculator">{{ t("nav.rent_calculator") }}</a>
+  <a href="{{ prefix }}/ai-assistant">{{ t("nav.ai_assistant") }}</a>
+  <a href="{{ prefix }}/settings">{{ t("nav.settings") }}</a>
+  <span class="lang-switch">
+    <a href="{{ prefix }}/set-language/es?next={{ request.scope.path }}">ES</a> |
+    <a href="{{ prefix }}/set-language/en?next={{ request.scope.path }}">EN</a> |
+    <a href="{{ prefix }}/set-language/zh?next={{ request.scope.path }}">中文</a>
+  </span>
+  <form method="post" action="{{ prefix }}/logout" class="inline">
+    <button type="submit" class="link">{{ t("nav.logout") }}</button>
   </form>
 </nav>
 <main class="container">

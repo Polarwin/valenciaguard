@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ t("users.title") }}</h1>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<table>
+  <tr><th>{{ t("users.username") }}</th><th>{{ t("users.role") }}</th><th>{{ t("users.linked_owner") }}</th><th>{{ t("users.created") }}</th><th>{{ t("users.reset_col") }}</th><th></th></tr>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.username }}{{ ' ' ~ t("users.you") if u.id == user.id }}</td>
+    <td>{{ u.role }}</td>
+    <td>{{ owner_by_user.get(u.id).name if owner_by_user.get(u.id) else '—' }}</td>
+    <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+    <td>
+      <form method="post" action="{{ prefix }}/users/{{ u.id }}/reset" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
+        <input name="password" id="pw-{{ u.id }}" class="small-input" minlength="8" required placeholder="{{ t('users.new_placeholder') }}">
+        <button type="button" class="link" onclick="genPw('pw-{{ u.id }}')">{{ t("users.generate") }}</button>
+        <button type="submit" class="link">{{ t("users.reset") }}</button>
+      </form>
+    </td>
+    <td>
+      {% if u.id != user.id %}
+      <form method="post" action="{{ prefix }}/users/{{ u.id }}/delete" class="inline"
+            onsubmit="return confirm('{{ t('users.confirm_delete', username=u.username) }}')">
+        <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
+        <button type="submit" class="link danger">{{ t("users.delete") }}</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>{{ t("users.add_title") }}</h2>
+<form method="post" action="{{ prefix }}/users" class="form">
+  <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
+  <label>{{ t("users.username") }} <input name="username" required></label>
+  <label>{{ t("users.role") }}
+    <select name="role">
+      <option value="owner">owner</option>
+      <option value="admin">admin</option>
+    </select>
+  </label>
+  <label>{{ t("users.password_label") }}
+    <span>
+      <input name="password" id="pw-new" minlength="8" required>
+      <button type="button" class="link" onclick="genPw('pw-new')">{{ t("users.generate") }}</button>
+    </span>
+  </label>
+  <label>{{ t("users.link_owner") }}
+    <select name="owner_id">
+      <option value="">—</option>
+      {% for o in unlinked_owners %}
+      <option value="{{ o.id }}">{{ o.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit">{{ t("users.create") }}</button>
+</form>
+
+<script>
+function genPw(id) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  const arr = new Uint32Array(12);
+  crypto.getRandomValues(arr);
+  document.getElementById(id).value = Array.from(arr, n => chars[n % chars.length]).join('');
+}
+</script>
+{% endblock %}

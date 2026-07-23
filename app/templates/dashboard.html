@@ -1,39 +1,39 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Dashboard</h1>
+<h1>{{ t("dash.title") }}</h1>
 <div class="cards">
-  <div class="card"><strong>{{ property_count }}</strong><span>Propiedades</span></div>
-  <div class="card"><strong>{{ occupied }}</strong><span>Ocupadas</span></div>
-  <div class="card"><strong>{{ collected_month | money }}</strong><span>Cobrado este mes</span></div>
-  <div class="card"><strong>{{ collected_ytd | money }}</strong><span>Cobrado YTD</span></div>
-  <div class="card warn"><strong>{{ overdue | length }}</strong><span>Alquileres atrasados</span></div>
-  <div class="card warn"><strong>{{ open_issues | length }}</strong><span>Incidencias abiertas</span></div>
+  <div class="card"><strong>{{ property_count }}</strong><span>{{ t("dash.properties") }}</span></div>
+  <div class="card"><strong>{{ occupied }}</strong><span>{{ t("dash.occupied") }}</span></div>
+  <div class="card"><strong>{{ collected_month | money }}</strong><span>{{ t("dash.collected_month") }}</span></div>
+  <div class="card"><strong>{{ collected_ytd | money }}</strong><span>{{ t("dash.collected_ytd") }}</span></div>
+  <div class="card warn"><strong>{{ overdue | length }}</strong><span>{{ t("dash.overdue") }}</span></div>
+  <div class="card warn"><strong>{{ open_issues | length }}</strong><span>{{ t("dash.open_issues") }}</span></div>
 </div>
 
-<h2>Centro de alertas</h2>
+<h2>{{ t("dash.alerts_title") }}</h2>
 {% if alerts %}
 <table>
-  <tr><th>Fecha</th><th>Tipo</th><th>Propiedad</th><th>Mensaje</th><th>Estado</th></tr>
+  <tr><th>{{ t("common.date") }}</th><th>{{ t("dash.type") }}</th><th>{{ t("dash.property") }}</th><th>{{ t("dash.message") }}</th><th>{{ t("common.status") }}</th></tr>
   {% for a in alerts %}
   <tr class="{{ 'row-urgent' if (a.due_date - today).days <= 7 else '' }}">
-    <td>{{ a.due_date | date }} <span class="muted">({{ (a.due_date - today).days }} d)</span></td>
+    <td>{{ a.due_date | date }} <span class="muted">({{ (a.due_date - today).days }} {{ t("dash.days_suffix") }})</span></td>
     <td>{{ a.alert_type }}</td>
-    <td>{% if prop_map.get(a.property_id) %}<a href="/properties/{{ a.property_id }}">{{ prop_map[a.property_id].address }}</a>{% endif %}</td>
+    <td>{% if prop_map.get(a.property_id) %}<a href="{{ prefix }}/properties/{{ a.property_id }}">{{ prop_map[a.property_id].address }}</a>{% endif %}</td>
     <td>{{ a.message }}</td>
-    <td>{{ 'notificada' if a.notified else 'pendiente' }}</td>
+    <td>{{ t("dash.notified") if a.notified else t("dash.pending") }}</td>
   </tr>
   {% endfor %}
 </table>
-{% else %}<p class="muted">Sin alertas próximas.</p>{% endif %}
+{% else %}<p class="muted">{{ t("dash.no_alerts") }}</p>{% endif %}
 
 {% if overdue %}
-<h2>Alquileres atrasados</h2>
+<h2>{{ t("dash.overdue_title") }}</h2>
 <table>
-  <tr><th>Mes</th><th>Propiedad</th><th>Importe</th><th>Días de retraso</th></tr>
+  <tr><th>{{ t("dash.month") }}</th><th>{{ t("dash.property") }}</th><th>{{ t("dash.amount") }}</th><th>{{ t("dash.late_days") }}</th></tr>
   {% for r in overdue %}
   <tr>
     <td>{{ r.month.strftime('%Y-%m') }}</td>
-    <td><a href="/properties/{{ r.property_id }}#rent">{{ prop_map.get(r.property_id).address if prop_map.get(r.property_id) else r.property_id }}</a></td>
+    <td><a href="{{ prefix }}/properties/{{ r.property_id }}#rent">{{ prop_map.get(r.property_id).address if prop_map.get(r.property_id) else r.property_id }}</a></td>
     <td>{{ r.amount_due | money }}</td>
     <td>{{ r.late_days }}</td>
   </tr>

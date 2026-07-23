@@ -1,17 +1,22 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ lang }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}ValenciaGuard 业主门户{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <title>{% block title %}{{ t("portal.brand") }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ prefix }}/static/style.css">
 </head>
 <body>
 <nav class="nav">
-  <span class="brand">ValenciaGuard 业主门户</span>
-  <a href="/owner-portal">首页</a>
-  <form method="post" action="/logout" class="inline">
-    <button type="submit" class="link">退出登录</button>
+  <span class="brand">{{ t("portal.brand") }}</span>
+  <a href="{{ prefix }}/owner-portal">{{ t("portal.home") }}</a>
+  <span class="lang-switch">
+    <a href="{{ prefix }}/set-language/es?next={{ request.scope.path }}">ES</a> |
+    <a href="{{ prefix }}/set-language/en?next={{ request.scope.path }}">EN</a> |
+    <a href="{{ prefix }}/set-language/zh?next={{ request.scope.path }}">中文</a>
+  </span>
+  <form method="post" action="{{ prefix }}/logout" class="inline">
+    <button type="submit" class="link">{{ t("portal.logout") }}</button>
   </form>
 </nav>
 <main class="container">

@@ -1,8 +1,8 @@
 <div class="chat-turn">
-  <p class="chat-q"><strong>Tú:</strong> {{ question }}</p>
+  <p class="chat-q"><strong>{{ t("ai.you") }}</strong> {{ question }}</p>
   <div class="chat-a">
-    {% if not ai_available %}<p class="muted">(modo sin API Kimi — respuesta de ejemplo)</p>{% endif %}
-    {% if context_used %}<p class="muted">Contexto de propiedad incluido.</p>{% endif %}
+    {% if not ai_available %}<p class="muted">{{ t("ai.mock_tag") }}</p>{% endif %}
+    {% if context_used %}<p class="muted">{{ t("ai.context_tag") }}</p>{% endif %}
     <pre class="answer">{{ answer }}</pre>
   </div>
 </div>

@@ -8,8 +8,10 @@ import secrets
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
 
+from .config import settings
 from .database import get_session
 from .models import User
 
@@ -83,7 +85,13 @@ def get_current_user(
 
 
 def _redirect(location: str) -> HTTPException:
-    return HTTPException(status_code=303, headers={"Location": location})
+    return HTTPException(status_code=303,
+                         headers={"Location": settings.root_path + location})
+
+
+def redirect(location: str) -> RedirectResponse:
+    """303 redirect that prepends the deployment root_path (if any)."""
+    return RedirectResponse(settings.root_path + location, status_code=303)
 
 
 def require_user(user: Optional[User] = Depends(get_current_user)) -> User:

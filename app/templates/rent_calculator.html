@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Calculadora de actualización de renta (IRAV {{ '%.2f' | format(rate * 100) }} %)</h1>
-<form method="post" action="/rent/calculator" class="form">
+<h1>{{ t("rent.calc_title", rate='%.2f' | format(rate * 100)) }}</h1>
+<form method="post" action="{{ prefix }}/rent/calculator" class="form">
   <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-  <label>Renta actual (€) <input type="number" step="0.01" name="current_rent" required></label>
-  <label>Nombre del inquilino <input name="tenant_name"></label>
-  <label>Dirección de la vivienda <input name="address"></label>
-  <button type="submit">Calcular y generar carta</button>
+  <label>{{ t("rent.current_rent") }} <input type="number" step="0.01" name="current_rent" required></label>
+  <label>{{ t("rent.tenant_name") }} <input name="tenant_name"></label>
+  <label>{{ t("rent.address") }} <input name="address"></label>
+  <button type="submit">{{ t("rent.calc_button") }}</button>
 </form>
 {% if result %}
 <div class="panel">
-  <p>Incremento máximo legal: <strong>{{ result.increase | money }}</strong></p>
-  <p>Nueva renta: <strong>{{ result.new_rent | money }}</strong></p>
+  <p>{{ t("rent.max_increase") }}: <strong>{{ result.increase | money }}</strong></p>
+  <p>{{ t("rent.new_rent") }}: <strong>{{ result.new_rent | money }}</strong></p>
 </div>
-<h2>Carta de notificación (español)</h2>
+<h2>{{ t("rent.letter_title") }}</h2>
 <pre class="letter">{{ letter }}</pre>
 {% endif %}
 {% endblock %}

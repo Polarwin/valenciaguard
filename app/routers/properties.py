@@ -3,11 +3,11 @@ from datetime import date
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from sqlmodel import Session, select
 
 from ..audit import log_action
-from ..auth import csrf_protect, require_admin
+from ..auth import csrf_protect, redirect, require_admin
 from ..database import get_session
 from ..models import Contract, Document, Issue, Owner, Property, RentRecord, Tenant, User
 from ..templates_config import templates
@@ -79,7 +79,7 @@ def create_property(
     session.commit()
     session.refresh(prop)
     log_action(session, user, "create", "property", prop.id, prop.address)
-    return RedirectResponse(f"/properties/{prop.id}", status_code=303)
+    return redirect(f"/properties/{prop.id}")
 
 
 @router.get("/{property_id}", response_class=HTMLResponse)
@@ -163,7 +163,7 @@ def update_property(
     session.add(prop)
     session.commit()
     log_action(session, user, "update", "property", prop.id, prop.address)
-    return RedirectResponse(f"/properties/{prop.id}", status_code=303)
+    return redirect(f"/properties/{prop.id}")
 
 
 @router.post("/{property_id}/delete")
@@ -180,4 +180,4 @@ def delete_property(
     session.delete(prop)
     session.commit()
     log_action(session, user, "delete", "property", property_id, prop.address)
-    return RedirectResponse("/properties", status_code=303)
+    return redirect("/properties")

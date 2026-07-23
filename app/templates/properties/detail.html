@@ -1,116 +1,116 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>{{ prop.address }}</h1>
-<p class="muted">{{ prop.city }} {{ prop.postal_code }} · Propietario: {{ owner.name if owner else '—' }} ·
-  <span class="badge badge-{{ prop.status }}">{{ prop.status }}</span>
-  · <a href="/properties/{{ prop.id }}/edit">Editar</a></p>
+<p class="muted">{{ prop.city }} {{ prop.postal_code }} · {{ t("props.owner") }}: {{ owner.name if owner else '—' }} ·
+  <span class="badge badge-{{ prop.status }}">{{ t("status." ~ prop.status) }}</span>
+  · <a href="{{ prefix }}/properties/{{ prop.id }}/edit">{{ t("props.edit") }}</a></p>
 
 <div class="tabs">
-  <button class="tab-btn active" data-tab="overview">Resumen</button>
-  <button class="tab-btn" data-tab="tenant">Inquilino</button>
-  <button class="tab-btn" data-tab="contract">Contrato</button>
-  <button class="tab-btn" data-tab="rent">Alquileres</button>
-  <button class="tab-btn" data-tab="issues">Incidencias</button>
-  <button class="tab-btn" data-tab="documents">Documentos</button>
+  <button class="tab-btn active" data-tab="overview">{{ t("props.tab_overview") }}</button>
+  <button class="tab-btn" data-tab="tenant">{{ t("props.tab_tenant") }}</button>
+  <button class="tab-btn" data-tab="contract">{{ t("props.tab_contract") }}</button>
+  <button class="tab-btn" data-tab="rent">{{ t("props.tab_rent") }}</button>
+  <button class="tab-btn" data-tab="issues">{{ t("props.tab_issues") }}</button>
+  <button class="tab-btn" data-tab="documents">{{ t("props.tab_documents") }}</button>
 </div>
 
 <section id="tab-overview" class="tab-panel">
   <dl class="grid">
-    <dt>Estado</dt><dd>{{ prop.status }}</dd>
-    <dt>Fecha de compra</dt><dd>{{ prop.purchase_date | date }}</dd>
-    <dt>Precio de compra</dt><dd>{{ prop.purchase_price | money }}</dd>
-    <dt>Valor estimado</dt><dd>{{ prop.current_value_estimate | money }}</dd>
-    <dt>Propietario</dt><dd>{{ owner.name if owner else '—' }} ({{ owner.email if owner else '' }})</dd>
+    <dt>{{ t("props.status") }}</dt><dd>{{ t("status." ~ prop.status) }}</dd>
+    <dt>{{ t("props.purchase_date") }}</dt><dd>{{ prop.purchase_date | date }}</dd>
+    <dt>{{ t("props.purchase_price") }}</dt><dd>{{ prop.purchase_price | money }}</dd>
+    <dt>{{ t("props.value") }}</dt><dd>{{ prop.current_value_estimate | money }}</dd>
+    <dt>{{ t("props.owner") }}</dt><dd>{{ owner.name if owner else '—' }} ({{ owner.email if owner else '' }})</dd>
   </dl>
-  <form method="post" action="/properties/{{ prop.id }}/delete" onsubmit="return confirm('¿Eliminar propiedad?')">
+  <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/delete" onsubmit="return confirm('{{ t('props.confirm_delete') }}')">
     <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-    <button class="danger" type="submit">Eliminar propiedad</button>
+    <button class="danger" type="submit">{{ t("props.delete") }}</button>
   </form>
 </section>
 
 <section id="tab-tenant" class="tab-panel hidden">
-  <h2>Inquilino</h2>
-  <form method="post" action="/properties/{{ prop.id }}/tenant" class="form">
+  <h2>{{ t("tenant.title") }}</h2>
+  <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/tenant" class="form">
     <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-    <label>Nombre <input name="name" required value="{{ tenant.name if tenant else '' }}"></label>
+    <label>{{ t("tenant.name") }} <input name="name" required value="{{ tenant.name if tenant else '' }}"></label>
     <label>NIE/DNI <input name="nie_dni" value="{{ tenant.nie_dni if tenant else '' }}"></label>
-    <label>Teléfono <input name="phone" value="{{ tenant.phone if tenant else '' }}"></label>
+    <label>{{ t("tenant.phone") }} <input name="phone" value="{{ tenant.phone if tenant else '' }}"></label>
     <label>Email <input name="email" type="email" value="{{ tenant.email if tenant else '' }}"></label>
-    <label>Contacto de emergencia <input name="emergency_contact" value="{{ tenant.emergency_contact if tenant else '' }}"></label>
-    <label>Fecha de entrada <input type="date" name="move_in_date" value="{{ tenant.move_in_date if tenant and tenant.move_in_date else '' }}"></label>
-    <label>Inicio contrato <input type="date" name="contract_start" value="{{ tenant.contract_start if tenant and tenant.contract_start else '' }}"></label>
-    <label>Fin contrato <input type="date" name="contract_end" value="{{ tenant.contract_end if tenant and tenant.contract_end else '' }}"></label>
-    <label>Renta mensual (€) <input type="number" step="0.01" name="rent_amount" value="{{ tenant.rent_amount if tenant else 0 }}"></label>
-    <label>Fianza (€) <input type="number" step="0.01" name="deposit_amount" value="{{ tenant.deposit_amount if tenant else 0 }}"></label>
-    <label class="check"><input type="checkbox" name="deposit_bank_guarantee" value="true" {{ 'checked' if tenant and tenant.deposit_bank_guarantee }}> Aval bancario de fianza</label>
-    <label>Importe aval (€) <input type="number" step="0.01" name="deposit_bank_guarantee_amount" value="{{ tenant.deposit_bank_guarantee_amount if tenant and tenant.deposit_bank_guarantee_amount is not none else '' }}"></label>
-    <label>Nº póliza seguro <input name="insurance_policy_number" value="{{ tenant.insurance_policy_number if tenant else '' }}"></label>
-    <label>Vencimiento seguro <input type="date" name="insurance_expiry" value="{{ tenant.insurance_expiry if tenant and tenant.insurance_expiry else '' }}"></label>
-    <button type="submit">Guardar inquilino</button>
+    <label>{{ t("tenant.emergency") }} <input name="emergency_contact" value="{{ tenant.emergency_contact if tenant else '' }}"></label>
+    <label>{{ t("tenant.move_in") }} <input type="date" name="move_in_date" value="{{ tenant.move_in_date if tenant and tenant.move_in_date else '' }}"></label>
+    <label>{{ t("tenant.contract_start") }} <input type="date" name="contract_start" value="{{ tenant.contract_start if tenant and tenant.contract_start else '' }}"></label>
+    <label>{{ t("tenant.contract_end") }} <input type="date" name="contract_end" value="{{ tenant.contract_end if tenant and tenant.contract_end else '' }}"></label>
+    <label>{{ t("tenant.rent") }} <input type="number" step="0.01" name="rent_amount" value="{{ tenant.rent_amount if tenant else 0 }}"></label>
+    <label>{{ t("tenant.deposit") }} <input type="number" step="0.01" name="deposit_amount" value="{{ tenant.deposit_amount if tenant else 0 }}"></label>
+    <label class="check"><input type="checkbox" name="deposit_bank_guarantee" value="true" {{ 'checked' if tenant and tenant.deposit_bank_guarantee }}> {{ t("tenant.guarantee") }}</label>
+    <label>{{ t("tenant.guarantee_amount") }} <input type="number" step="0.01" name="deposit_bank_guarantee_amount" value="{{ tenant.deposit_bank_guarantee_amount if tenant and tenant.deposit_bank_guarantee_amount is not none else '' }}"></label>
+    <label>{{ t("tenant.policy") }} <input name="insurance_policy_number" value="{{ tenant.insurance_policy_number if tenant else '' }}"></label>
+    <label>{{ t("tenant.insurance_expiry") }} <input type="date" name="insurance_expiry" value="{{ tenant.insurance_expiry if tenant and tenant.insurance_expiry else '' }}"></label>
+    <button type="submit">{{ t("tenant.save") }}</button>
   </form>
 </section>
 
 <section id="tab-contract" class="tab-panel hidden">
-  <h2>Contratos</h2>
+  <h2>{{ t("contract.title") }}</h2>
   {% for c in contracts %}
   <div class="panel">
-    <p><strong>{{ c.contract_type }}</strong> · inicio {{ c.start_date | date }} · {{ c.duration_months }} meses ·
-       renta {{ c.rent_amount | money }} · fianza {{ c.deposit_amount | money }} ·
-       arrendador {{ 'persona jurídica (7 años)' if c.landlord_is_company else 'persona física (5 años)' }}</p>
+    <p><strong>{{ c.contract_type }}</strong> · {{ c.start_date | date }} · {{ c.duration_months }} {{ t("contract.months") }} ·
+       {{ c.rent_amount | money }} · {{ t("contract.deposit_amount") }} {{ c.deposit_amount | money }} ·
+       {{ t("contract.landlord_label") }} {{ t("contract.landlord_company") if c.landlord_is_company else t("contract.landlord_individual") }}</p>
     <dl class="grid">
-      <dt>Fin obligatorio (LAU)</dt><dd>{{ c.mandatory_end_date | date }}</dd>
-      <dt>Límite preaviso (4 meses)</dt><dd><strong>{{ c.notice_deadline_date | date }}</strong></dd>
-      <dt>Próxima actualización renta</dt><dd>{{ c.next_rent_update_date | date }}</dd>
-      <dt>Fin prórroga tácita</dt><dd>{{ c.tacit_renewal_end_date | date }}</dd>
+      <dt>{{ t("contract.mandatory_end") }}</dt><dd>{{ c.mandatory_end_date | date }}</dd>
+      <dt>{{ t("contract.notice_deadline") }}</dt><dd><strong>{{ c.notice_deadline_date | date }}</strong></dd>
+      <dt>{{ t("contract.next_rent_update") }}</dt><dd>{{ c.next_rent_update_date | date }}</dd>
+      <dt>{{ t("contract.tacit_end") }}</dt><dd>{{ c.tacit_renewal_end_date | date }}</dd>
     </dl>
-    <form method="post" action="/properties/{{ prop.id }}/contracts/{{ c.id }}/delete" onsubmit="return confirm('¿Eliminar contrato?')">
+    <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/contracts/{{ c.id }}/delete" onsubmit="return confirm('{{ t('contract.confirm_delete') }}')">
       <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-      <button class="danger" type="submit">Eliminar</button>
+      <button class="danger" type="submit">{{ t("contract.delete") }}</button>
     </form>
   </div>
   {% endfor %}
 
-  <h3>Nuevo contrato</h3>
-  <form hx-post="/properties/{{ prop.id }}/contracts/parse" hx-target="#parse-result"
+  <h3>{{ t("contract.new") }}</h3>
+  <form hx-post="{{ prefix }}/properties/{{ prop.id }}/contracts/parse" hx-target="#parse-result"
         hx-encoding="multipart/form-data" class="form inline-form">
     <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-    <label>Extraer de PDF (IA) <input type="file" name="file" accept=".pdf"></label>
-    <button type="submit">Analizar</button>
+    <label>{{ t("contract.parse_label") }} <input type="file" name="file" accept=".pdf"></label>
+    <button type="submit">{{ t("contract.parse_button") }}</button>
   </form>
   <div id="parse-result"></div>
 
-  <form method="post" action="/properties/{{ prop.id }}/contracts" class="form">
+  <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/contracts" class="form">
     <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-    <label>Tipo
+    <label>{{ t("contract.type") }}
       <select name="contract_type">
         <option value="residential">residential</option>
         <option value="seasonal">seasonal</option>
       </select>
     </label>
-    <label>Fecha inicio <input type="date" name="start_date" required></label>
-    <label>Fecha fin <input type="date" name="end_date"></label>
-    <label>Duración (meses) <input type="number" name="duration_months" value="12"></label>
-    <label>Renta (€) <input type="number" step="0.01" name="rent_amount" required></label>
-    <label>Fianza (€) <input type="number" step="0.01" name="deposit_amount" value="0"></label>
-    <label class="check"><input type="checkbox" name="has_rent_update_clause" value="true"> Cláusula de actualización de renta</label>
-    <label>Fecha actualización renta <input type="date" name="rent_update_date"></label>
-    <label>Última renta actualizada (€) <input type="number" step="0.01" name="last_rent_update_amount"></label>
-    <label class="check"><input type="checkbox" name="landlord_is_company" value="true"> Arrendador persona jurídica (7 años)</label>
-    <button type="submit">Guardar contrato</button>
+    <label>{{ t("contract.start_date") }} <input type="date" name="start_date" required></label>
+    <label>{{ t("contract.end_date") }} <input type="date" name="end_date"></label>
+    <label>{{ t("contract.duration") }} <input type="number" name="duration_months" value="12"></label>
+    <label>{{ t("contract.rent_amount") }} <input type="number" step="0.01" name="rent_amount" required></label>
+    <label>{{ t("contract.deposit_amount") }} <input type="number" step="0.01" name="deposit_amount" value="0"></label>
+    <label class="check"><input type="checkbox" name="has_rent_update_clause" value="true"> {{ t("contract.update_clause") }}</label>
+    <label>{{ t("contract.update_date") }} <input type="date" name="rent_update_date"></label>
+    <label>{{ t("contract.last_update") }} <input type="number" step="0.01" name="last_rent_update_amount"></label>
+    <label class="check"><input type="checkbox" name="landlord_is_company" value="true"> {{ t("contract.is_company") }}</label>
+    <button type="submit">{{ t("contract.save") }}</button>
   </form>
 </section>
 
 <section id="tab-rent" class="tab-panel hidden">
-  <h2>Historial de alquileres</h2>
-  <form method="post" action="/properties/{{ prop.id }}/rent" class="form inline-form">
+  <h2>{{ t("rent.history") }}</h2>
+  <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/rent" class="form inline-form">
     <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-    <label>Mes <input type="month" name="month" required></label>
-    <label>Importe (€) <input type="number" step="0.01" name="amount_due" required></label>
-    <label>Notas <input name="notes"></label>
-    <button type="submit">Añadir</button>
+    <label>{{ t("rent.month") }} <input type="month" name="month" required></label>
+    <label>{{ t("rent.amount") }} <input type="number" step="0.01" name="amount_due" required></label>
+    <label>{{ t("rent.notes") }} <input name="notes"></label>
+    <button type="submit">{{ t("rent.add") }}</button>
   </form>
   <table>
-    <tr><th>Mes</th><th>Debe</th><th>Pagado</th><th>Fecha pago</th><th>Estado</th><th>Retraso</th><th></th></tr>
+    <tr><th>{{ t("rent.month") }}</th><th>{{ t("rent.due") }}</th><th>{{ t("rent.paid") }}</th><th>{{ t("rent.paid_date") }}</th><th>{{ t("common.status") }}</th><th>{{ t("rent.late") }}</th><th></th></tr>
     <tbody id="rent-rows">
     {% for r in rent_records %}
       {% include "partials/rent_row.html" %}
@@ -120,53 +120,53 @@
 </section>
 
 <section id="tab-issues" class="tab-panel hidden">
-  <h2>Incidencias</h2>
-  <form method="post" action="/properties/{{ prop.id }}/issues" class="form">
+  <h2>{{ t("issues.title") }}</h2>
+  <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/issues" class="form">
     <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-    <label>Reportada por
+    <label>{{ t("issues.reported_by") }}
       <select name="reported_by">
         <option value="tenant">tenant</option><option value="owner">owner</option><option value="admin">admin</option>
       </select>
     </label>
-    <label>Categoría
+    <label>{{ t("issues.category") }}
       <select name="category">
         {% for cat in ['plumbing', 'electrical', 'noise', 'structural', 'other'] %}
         <option value="{{ cat }}">{{ cat }}</option>
         {% endfor %}
       </select>
     </label>
-    <label>Descripción <textarea name="description" required></textarea></label>
-    <label>Coste estimado (€, opcional) <input type="number" step="0.01" name="cost"></label>
-    <button type="submit">Crear incidencia (con triaje IA)</button>
+    <label>{{ t("issues.description") }} <textarea name="description" required></textarea></label>
+    <label>{{ t("issues.cost") }} <input type="number" step="0.01" name="cost"></label>
+    <button type="submit">{{ t("issues.create") }}</button>
   </form>
   {% for i in issues %}
   <div class="panel">
-    <p><span class="badge badge-{{ i.urgency }}">{{ i.urgency }}</span>
-       <strong>{{ i.category }}</strong> · {{ i.status }} · {{ i.created_at.strftime('%Y-%m-%d') }}
+    <p><span class="badge badge-{{ i.urgency }}">{{ t("urgency." ~ i.urgency) }}</span>
+       <strong>{{ i.category }}</strong> · {{ t("status." ~ i.status) }} · {{ i.created_at.strftime('%Y-%m-%d') }}
        {% if i.cost is not none %} · {{ i.cost | money }}{% endif %}
        {% if i.vendor_name %} · {{ i.vendor_name }}{% endif %}</p>
     <p>{{ i.description }}</p>
     {% if i.ai_notes %}
-    <details><summary>Triaje IA</summary><pre>{{ i.ai_notes }}</pre></details>
+    <details><summary>{{ t("issues.ai_triage") }}</summary><pre>{{ i.ai_notes }}</pre></details>
     {% endif %}
-    <form method="post" action="/properties/{{ prop.id }}/issues/{{ i.id }}/status" class="form inline-form">
+    <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/issues/{{ i.id }}/status" class="form inline-form">
       <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
       <select name="status">
         {% for s in ['open', 'in_progress', 'resolved', 'closed'] %}
-        <option value="{{ s }}" {{ 'selected' if i.status == s }}>{{ s }}</option>
+        <option value="{{ s }}" {{ 'selected' if i.status == s }}>{{ t("status." ~ s) }}</option>
         {% endfor %}
       </select>
-      <input type="number" step="0.01" name="cost" placeholder="coste €" value="{{ i.cost if i.cost is not none else '' }}">
-      <input name="vendor_name" placeholder="proveedor" value="{{ i.vendor_name }}">
-      <button type="submit">Actualizar</button>
+      <input type="number" step="0.01" name="cost" placeholder="{{ t('issues.cost_placeholder') }}" value="{{ i.cost if i.cost is not none else '' }}">
+      <input name="vendor_name" placeholder="{{ t('issues.vendor_placeholder') }}" value="{{ i.vendor_name }}">
+      <button type="submit">{{ t("issues.update") }}</button>
     </form>
   </div>
   {% endfor %}
 </section>
 
 <section id="tab-documents" class="tab-panel hidden">
-  <h2>Documentos</h2>
-  <form method="post" action="/properties/{{ prop.id }}/documents" enctype="multipart/form-data" class="form inline-form">
+  <h2>{{ t("docs.title") }}</h2>
+  <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/documents" enctype="multipart/form-data" class="form inline-form">
     <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
     <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" required>
     <select name="category">
@@ -175,20 +175,20 @@
       <option value="{{ cat }}">{{ cat }}</option>
       {% endfor %}
     </select>
-    <button type="submit">Subir</button>
+    <button type="submit">{{ t("docs.upload") }}</button>
   </form>
   <table>
-    <tr><th>Archivo</th><th>Categoría</th><th>Fecha</th><th></th></tr>
+    <tr><th>{{ t("common.filename") }}</th><th>{{ t("docs.category") }}</th><th>{{ t("docs.date") }}</th><th></th></tr>
     {% for d in documents %}
     <tr>
       <td>{{ d.filename }}</td>
       <td>{{ d.category }}</td>
       <td>{{ d.upload_date.strftime('%Y-%m-%d') }}</td>
       <td>
-        <a href="/properties/{{ prop.id }}/documents/{{ d.id }}/download">descargar</a>
-        <form method="post" action="/properties/{{ prop.id }}/documents/{{ d.id }}/delete" class="inline" onsubmit="return confirm('¿Eliminar documento?')">
+        <a href="{{ prefix }}/properties/{{ prop.id }}/documents/{{ d.id }}/download">{{ t("common.download") }}</a>
+        <form method="post" action="{{ prefix }}/properties/{{ prop.id }}/documents/{{ d.id }}/delete" class="inline" onsubmit="return confirm('{{ t('docs.confirm_delete') }}')">
           <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-          <button class="link danger" type="submit">eliminar</button>
+          <button class="link danger" type="submit">{{ t("docs.delete") }}</button>
         </form>
       </td>
     </tr>

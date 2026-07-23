@@ -3,15 +3,15 @@
   <td>{{ r.amount_due | money }}</td>
   <td>{{ r.amount_paid | money }}</td>
   <td>{{ r.paid_date | date }}</td>
-  <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+  <td><span class="badge badge-{{ r.status }}">{{ t("status." ~ r.status) }}</span></td>
   <td>{{ r.late_days if r.late_days else '' }}</td>
   <td>
     {% if r.status != 'paid' %}
-    <form hx-post="/rent/{{ r.id }}/pay" hx-target="#rent-row-{{ r.id }}" hx-swap="outerHTML" class="inline">
+    <form hx-post="{{ prefix }}/rent/{{ r.id }}/pay" hx-target="#rent-row-{{ r.id }}" hx-swap="outerHTML" class="inline">
       <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
       <input type="number" step="0.01" name="amount_paid" value="{{ r.amount_due }}" class="small-input" required>
       <input type="date" name="paid_date" value="{{ today }}" required>
-      <button type="submit" class="link">marcar pagado</button>
+      <button type="submit" class="link">{{ t("rent.mark_paid") }}</button>
     </form>
     {% endif %}
   </td>

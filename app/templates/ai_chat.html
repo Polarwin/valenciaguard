@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Asistente IA</h1>
+<h1>{{ t("ai.title") }}</h1>
 {% if not ai_available %}
-<p class="muted">Kimi API no configurada (KIMI_API_KEY) — se devolverán respuestas de ejemplo.</p>
+<p class="muted">{{ t("ai.mock_notice") }}</p>
 {% endif %}
-<p class="muted">Ejemplos: «redacta una carta de subida de renta», «evalúa la rescisión del contrato de Calle Colón»,
-«traduce este presupuesto al chino», «triaje de una queja de ruido».</p>
+<p class="muted">{{ t("ai.examples") }}</p>
 <div id="chat-log"></div>
-<form hx-post="/api/ai/ask" hx-target="#chat-log" hx-swap="beforeend"
+<form hx-post="{{ prefix }}/api/ai/ask" hx-target="#chat-log" hx-swap="beforeend"
       hx-on::after-request="this.reset()" class="form">
   <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-  <textarea name="question" rows="3" required placeholder="Escribe tu pregunta..."></textarea>
-  <button type="submit">Preguntar</button>
+  <textarea name="question" rows="3" required placeholder="{{ t('ai.placeholder') }}"></textarea>
+  <button type="submit">{{ t("ai.ask") }}</button>
 </form>
 {% endblock %}

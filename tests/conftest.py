@@ -9,6 +9,7 @@ os.environ["DATABASE_URL"] = f"sqlite:///{_tmp}/test.db"
 os.environ["UPLOAD_DIR"] = str(_tmp / "uploads")
 os.environ["SECRET_KEY"] = "test-secret"
 os.environ["KIMI_API_KEY"] = ""
+os.environ["ROOT_PATH"] = ""  # .env may set a prefix for deployment; tests run at root
 # ensure a stray .env cannot override the test database
 os.environ["SMTP_HOST"] = ""
 

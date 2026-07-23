@@ -27,25 +27,26 @@ cp deploy/valenciaguard.service /etc/systemd/system/valenciaguard.service
 systemctl daemon-reload
 systemctl enable valenciaguard
 
-echo "==> Installing nginx config"
-cp deploy/nginx.conf /etc/nginx/sites-available/valenciaguard
-ln -sf /etc/nginx/sites-available/valenciaguard /etc/nginx/sites-enabled/valenciaguard
-nginx -t && systemctl reload nginx
+echo "==> nginx"
+echo "    The app mounts under /valenciaguard/ on the EXISTING nginx server."
+echo "    Merge the location blocks from deploy/nginx.conf into your existing"
+echo "    server {} (the script does NOT create a new vhost)."
 
 cat <<EOF
 
 Done. Next steps:
   1. Edit ${APP_DIR}/.env:
        - set SECRET_KEY to a long random string
+       - set ROOT_PATH=/valenciaguard
        - set UPLOAD_DIR=${DATA_DIR}/uploads
        - set DATABASE_URL (sqlite:////var/lib/valenciaguard/valenciaguard.db is fine)
        - optionally KIMI_API_KEY, SMTP_*, CJK_FONT_PATH
   2. Seed the database:
        sudo -u ${APP_USER} ${APP_DIR}/.venv/bin/python -m scripts.seed
        (run from ${APP_DIR})
-  3. Start the service:  systemctl start valenciaguard
-  4. Edit /etc/nginx/sites-available/valenciaguard with your domain,
-     then add TLS (certbot --nginx).
+  3. Start the service:  systemctl start valenciaguard  (listens on 127.0.0.1:8473)
+  4. Add the location blocks from deploy/nginx.conf to your existing nginx
+     server {} and reload nginx (nginx -t && systemctl reload nginx).
   5. Optional cron for alerts:
        0 8 * * * ${APP_USER} cd ${APP_DIR} && .venv/bin/python -m app.services.alerts
 EOF

@@ -52,7 +52,7 @@ Cron example: `0 8 * * * cd /opt/valenciaguard && .venv/bin/python -m app.servic
 
 ## Configuration (.env)
 
-See `.env.example` for all variables: `DATABASE_URL`, `SECRET_KEY`, `UPLOAD_DIR`,
+See `.env.example` for all variables: `DATABASE_URL`, `SECRET_KEY`, `ROOT_PATH`, `UPLOAD_DIR`,
 `KIMI_API_KEY` / `KIMI_BASE_URL` / `KIMI_MODEL`, `SMTP_*`, `NOTIFY_EMAIL`,
 `CJK_FONT_PATH`, `IRAV_RATE` (default `0.0214`), `COST_THRESHOLD` (default `200`).
 
@@ -87,7 +87,10 @@ required** for proper Chinese rendering — install one (e.g.
 If the font is missing the PDF is still generated with a warning banner and
 non-Latin characters replaced, so the route never fails.
 
-## Deployment (Ubuntu, systemd + nginx)
+## Deployment (Ubuntu, systemd + nginx subpath)
+
+The app is deployed behind an **existing** nginx server under the subpath
+`/valenciaguard/`, listening on `127.0.0.1:8473`.
 
 ```bash
 sudo ./install_service.sh
@@ -95,8 +98,34 @@ sudo ./install_service.sh
 
 The script creates the `valenciaguard` user, installs to `/opt/valenciaguard`,
 creates `/var/lib/valenciaguard/uploads`, installs the systemd unit
-(`deploy/valenciaguard.service`) and the nginx vhost (`deploy/nginx.conf`),
-then prints next steps (edit `.env`, seed, start service, TLS via certbot).
+(`deploy/valenciaguard.service`, port 8473), then prints next steps.
+
+In `/opt/valenciaguard/.env` set:
+
+```
+ROOT_PATH=/valenciaguard
+```
+
+nginx: **merge** the location blocks from `deploy/nginx.conf` into the existing
+`server {}` (no new vhost is created):
+
+```nginx
+location = /valenciaguard { return 301 /valenciaguard/; }
+location /valenciaguard/ {
+    proxy_pass http://127.0.0.1:8473/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Prefix /valenciaguard;
+}
+```
+
+`proxy_pass` with the trailing slash strips the prefix, so the app sees
+root-relative paths; every URL the app generates (links, forms, redirects,
+static refs) carries `ROOT_PATH` automatically. The session cookie is named
+`vg_session` and scoped to the prefix path so it cannot collide with sibling
+apps on the same hostname. With `ROOT_PATH` empty the app works normally at
+the domain root.
 
 ## Password hashing
 

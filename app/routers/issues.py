@@ -3,11 +3,10 @@ import json
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
 from sqlmodel import Session
 
 from ..audit import log_action
-from ..auth import csrf_protect, require_admin
+from ..auth import csrf_protect, redirect, require_admin
 from ..database import get_session
 from ..models import Issue, Owner, Property, User, get_setting
 from ..services import ai_service
@@ -67,7 +66,7 @@ def create_issue(
                 f"— ValenciaGuard 物业管理"
             )
             send_email(owner.email, f"【ValenciaGuard】房产维修通知 — {prop.address}", body)
-    return RedirectResponse(f"/properties/{property_id}#issues", status_code=303)
+    return redirect(f"/properties/{property_id}#issues")
 
 
 @router.post("/{issue_id}/status")
@@ -94,4 +93,4 @@ def update_issue_status(
     session.add(issue)
     session.commit()
     log_action(session, user, "update", "issue", issue.id, f"status={status}")
-    return RedirectResponse(f"/properties/{property_id}#issues", status_code=303)
+    return redirect(f"/properties/{property_id}#issues")

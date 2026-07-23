@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Propiedades <a class="btn" href="/properties/new">+ Nueva</a></h1>
+<h1>{{ t("props.title") }} <a class="btn" href="{{ prefix }}/properties/new">{{ t("props.add") }}</a></h1>
 <table>
-  <tr><th>Dirección</th><th>Ciudad</th><th>Propietario</th><th>Estado</th><th>Valor estimado</th></tr>
+  <tr><th>{{ t("props.address") }}</th><th>{{ t("props.city") }}</th><th>{{ t("props.owner") }}</th><th>{{ t("props.status") }}</th><th>{{ t("props.value") }}</th></tr>
   {% for p in properties %}
   <tr>
-    <td><a href="/properties/{{ p.id }}">{{ p.address }}</a></td>
+    <td><a href="{{ prefix }}/properties/{{ p.id }}">{{ p.address }}</a></td>
     <td>{{ p.city }} {{ p.postal_code }}</td>
     <td>{{ owners.get(p.owner_id).name if owners.get(p.owner_id) else '—' }}</td>
-    <td><span class="badge badge-{{ p.status }}">{{ p.status }}</span></td>
+    <td><span class="badge badge-{{ p.status }}">{{ t("status." ~ p.status) }}</span></td>
     <td>{{ p.current_value_estimate | money }}</td>
   </tr>
   {% endfor %}
 </table>
-{% if not properties %}<p class="muted">No hay propiedades registradas.</p>{% endif %}
+{% if not properties %}<p class="muted">{{ t("props.empty") }}</p>{% endif %}
 {% endblock %}

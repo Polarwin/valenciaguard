@@ -2,7 +2,7 @@
 <p class="error">{{ error }}</p>
 {% elif result %}
 <div class="panel">
-  <p><strong>Extracción ({{ result.get('source', 'mock') }})</strong> — copie los valores al formulario:</p>
+  <p><strong>{{ t("contract.parse_result", source=result.get('source', 'mock')) }}</strong></p>
   <pre>{{ result_json }}</pre>
 </div>
 {% endif %}

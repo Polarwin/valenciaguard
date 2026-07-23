@@ -1,10 +1,10 @@
 """Owner management: owners + linked portal user accounts."""
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from sqlmodel import Session, select
 
 from ..audit import log_action
-from ..auth import csrf_protect, hash_password, require_admin
+from ..auth import csrf_protect, hash_password, redirect, require_admin
 from ..database import get_session
 from ..models import Owner, User
 from ..templates_config import templates
@@ -62,7 +62,7 @@ def create_owner(
     session.commit()
     session.refresh(owner)
     log_action(session, user, "create", "owner", owner.id, owner.name)
-    return RedirectResponse("/owners", status_code=303)
+    return redirect("/owners")
 
 
 @router.post("/{owner_id}/edit")
@@ -89,4 +89,4 @@ def update_owner(
     session.add(owner)
     session.commit()
     log_action(session, user, "update", "owner", owner.id, owner.name)
-    return RedirectResponse("/owners", status_code=303)
+    return redirect("/owners")

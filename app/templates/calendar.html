@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Calendario de vencimientos</h1>
+<h1>{{ t("cal.title") }}</h1>
 <table>
-  <tr><th>Fecha</th><th>Evento</th><th>Detalle</th><th></th></tr>
+  <tr><th>{{ t("common.date") }}</th><th>{{ t("cal.event") }}</th><th>{{ t("cal.detail") }}</th><th></th></tr>
   {% for e in events %}
   <tr class="{{ 'row-urgent' if e.date >= today and (e.date - today).days <= 30 else ('muted' if e.date < today else '') }}">
     <td>{{ e.date | date }}</td>
     <td>{{ e.label }}</td>
     <td>{{ e.detail }}</td>
-    <td><a href="{{ e.url }}">ver</a></td>
+    <td><a href="{{ prefix }}{{ e.url }}">{{ t("cal.view") }}</a></td>
   </tr>
   {% endfor %}
 </table>
-{% if not events %}<p class="muted">No hay eventos.</p>{% endif %}
+{% if not events %}<p class="muted">{{ t("cal.empty") }}</p>{% endif %}
 {% endblock %}

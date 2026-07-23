@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Nuevo propietario</h1>
-<form method="post" action="/owners" class="form">
+<h1>{{ t("owners.new_title") }}</h1>
+<form method="post" action="{{ prefix }}/owners" class="form">
   <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
-  <label>Nombre <input name="name" required></label>
+  <label>{{ t("owners.name") }} <input name="name" required></label>
   <label>Email <input name="email" type="email"></label>
-  <label>Teléfono <input name="phone"></label>
+  <label>{{ t("owners.phone") }} <input name="phone"></label>
   <label>WeChat <input name="wechat"></label>
-  <label>Notas <textarea name="notes"></textarea></label>
+  <label>{{ t("owners.notes") }} <textarea name="notes"></textarea></label>
   <fieldset>
-    <legend>Cuenta del portal (opcional)</legend>
-    <label>Usuario <input name="username"></label>
-    <label>Contraseña <input name="password" type="password"></label>
+    <legend>{{ t("owners.portal_account") }}</legend>
+    <label>{{ t("owners.username") }} <input name="username"></label>
+    <label>{{ t("owners.password") }} <input name="password" type="password"></label>
   </fieldset>
-  <button type="submit">Guardar</button>
+  <button type="submit">{{ t("common.save") }}</button>
 </form>
 {% endblock %}
