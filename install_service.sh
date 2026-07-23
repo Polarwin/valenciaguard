@@ -1,52 +1,53 @@
 #!/usr/bin/env bash
-# Install ValenciaGuard as a systemd service behind nginx on Ubuntu.
-# Run as root (or with sudo) from the repository root.
+# Install ValenciaGuard as a systemd service running IN PLACE from this
+# project directory (no copying to /opt, no dedicated system user).
+# Run with sudo from the repository root:  sudo ./install_service.sh
 set -euo pipefail
 
-APP_USER=valenciaguard
-APP_DIR=/opt/valenciaguard
-DATA_DIR=/var/lib/valenciaguard
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+APP_USER="${SUDO_USER:-$(stat -c '%U' "$PROJECT_DIR")}"
+UNIT=/etc/systemd/system/valenciaguard.service
 
-echo "==> Creating user ${APP_USER}"
-id -u ${APP_USER} >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin ${APP_USER}
+if [[ $EUID -ne 0 ]]; then
+    echo "Please run as root: sudo $0" >&2
+    exit 1
+fi
 
-echo "==> Creating directories"
-mkdir -p ${APP_DIR} ${DATA_DIR}/uploads
-cp -r app static scripts requirements.txt ${APP_DIR}/
-[ -f .env ] && cp .env ${APP_DIR}/.env || cp .env.example ${APP_DIR}/.env
-chown -R ${APP_USER}:${APP_USER} ${APP_DIR} ${DATA_DIR}
-chmod 600 ${APP_DIR}/.env
+if [[ ! -x "$PROJECT_DIR/.venv/bin/uvicorn" ]]; then
+    echo "No virtualenv found at $PROJECT_DIR/.venv" >&2
+    echo "Create it first:  python3 -m venv .venv && .venv/bin/pip install -r requirements.txt" >&2
+    exit 1
+fi
 
-echo "==> Creating virtualenv and installing dependencies"
-python3 -m venv ${APP_DIR}/.venv
-${APP_DIR}/.venv/bin/pip install --upgrade pip
-${APP_DIR}/.venv/bin/pip install -r ${APP_DIR}/requirements.txt
+if [[ ! -f "$PROJECT_DIR/.env" ]]; then
+    echo "No .env found — copying .env.example. Edit it before starting the service."
+    cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
+    chown "$APP_USER:$APP_USER" "$PROJECT_DIR/.env"
+fi
 
-echo "==> Installing systemd unit"
-cp deploy/valenciaguard.service /etc/systemd/system/valenciaguard.service
+echo "==> Installing systemd unit (runs as ${APP_USER} from ${PROJECT_DIR})"
+cp "$PROJECT_DIR/deploy/valenciaguard.service" "$UNIT"
 systemctl daemon-reload
 systemctl enable valenciaguard
 
 echo "==> nginx"
 echo "    The app mounts under /valenciaguard/ on the EXISTING nginx server."
-echo "    Merge the location blocks from deploy/nginx.conf into your existing"
-echo "    server {} (the script does NOT create a new vhost)."
+echo "    To add the route, run:  sudo ./install_nginx.sh"
 
 cat <<EOF
 
 Done. Next steps:
-  1. Edit ${APP_DIR}/.env:
-       - set SECRET_KEY to a long random string
-       - set ROOT_PATH=/valenciaguard
-       - set UPLOAD_DIR=${DATA_DIR}/uploads
-       - set DATABASE_URL (sqlite:////var/lib/valenciaguard/valenciaguard.db is fine)
+  1. Check .env in this directory:
+       - SECRET_KEY set to a long random string
+       - ROOT_PATH=/valenciaguard
+       - DATABASE_URL (postgres or sqlite)
        - optionally KIMI_API_KEY, SMTP_*, CJK_FONT_PATH
-  2. Seed the database:
-       sudo -u ${APP_USER} ${APP_DIR}/.venv/bin/python -m scripts.seed
-       (run from ${APP_DIR})
-  3. Start the service:  systemctl start valenciaguard  (listens on 127.0.0.1:8473)
-  4. Add the location blocks from deploy/nginx.conf to your existing nginx
-     server {} and reload nginx (nginx -t && systemctl reload nginx).
+  2. Seed the database (first time only):
+       .venv/bin/python scripts/seed.py
+  3. Start the service:  sudo systemctl start valenciaguard
+     (listens on 127.0.0.1:8473; code edits apply after
+      'sudo systemctl restart valenciaguard')
+  4. Add the nginx route:  sudo ./install_nginx.sh
   5. Optional cron for alerts:
-       0 8 * * * ${APP_USER} cd ${APP_DIR} && .venv/bin/python -m app.services.alerts
+       0 8 * * * ${APP_USER} cd ${PROJECT_DIR} && .venv/bin/python -m app.services.alerts
 EOF

@@ -48,7 +48,7 @@ Alert generation runs automatically on admin dashboard load, and standalone via:
 .venv/bin/python -m app.services.alerts
 ```
 
-Cron example: `0 8 * * * cd /opt/valenciaguard && .venv/bin/python -m app.services.alerts`
+Cron example: `0 8 * * * cd /home/justin/Projects/valenciaguard && .venv/bin/python -m app.services.alerts`
 
 ## Configuration (.env)
 
@@ -96,11 +96,13 @@ The app is deployed behind an **existing** nginx server under the subpath
 sudo ./install_service.sh
 ```
 
-The script creates the `valenciaguard` user, installs to `/opt/valenciaguard`,
-creates `/var/lib/valenciaguard/uploads`, installs the systemd unit
-(`deploy/valenciaguard.service`, port 8473), then prints next steps.
+The script installs the systemd unit (`deploy/valenciaguard.service`) and
+enables it. The service runs **in place** from the project directory as the
+owning user, using the project's `.venv` and `.env` — no copying to `/opt`,
+no dedicated system user. Code edits take effect after
+`sudo systemctl restart valenciaguard`.
 
-In `/opt/valenciaguard/.env` set:
+In the project `.env` set:
 
 ```
 ROOT_PATH=/valenciaguard

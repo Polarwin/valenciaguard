@@ -1,15 +1,15 @@
 [Unit]
 Description=ValenciaGuard property management app
-After=network.target
+After=network.target postgresql.service
 
 [Service]
 Type=simple
-User=valenciaguard
-Group=valenciaguard
-WorkingDirectory=/opt/valenciaguard
-EnvironmentFile=/opt/valenciaguard/.env
+User=justin
+Group=justin
+WorkingDirectory=/home/justin/Projects/valenciaguard
+EnvironmentFile=/home/justin/Projects/valenciaguard/.env
 # ROOT_PATH=/valenciaguard is read from the EnvironmentFile (.env)
-ExecStart=/opt/valenciaguard/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8473 --workers 2
+ExecStart=/home/justin/Projects/valenciaguard/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8473 --workers 2
 Restart=on-failure
 RestartSec=5
 
