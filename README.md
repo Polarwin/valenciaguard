@@ -26,10 +26,18 @@ Open http://127.0.0.1:8000/login
 
 ### Seed credentials
 
-| User    | Password   | Role  | Lands on                    |
-|---------|------------|-------|-----------------------------|
-| `admin` | `admin123` | admin | `/dashboard` (Spanish UI)   |
-| `owner1`| `owner123` | owner | `/owner-portal` (中文 UI)   |
+| User    | Password   | Role       | Lands on                    |
+|---------|------------|------------|-----------------------------|
+| `admin` | `admin123` | superuser  | `/dashboard` (Spanish UI)   |
+| `owner1`| `owner123` | owner      | `/owner-portal` (中文 UI)   |
+
+## User manuals
+
+Role-based guides (superuser / employee / owner), including phone installation:
+
+- 中文: `docs/USER_MANUAL.zh.md` (PDF: `docs/USER_MANUAL.zh.pdf`)
+- Español: `docs/USER_MANUAL.es.md` (PDF: `docs/USER_MANUAL.es.pdf`)
+- English: `docs/USER_MANUAL.en.md` (PDF: `docs/USER_MANUAL.en.pdf`)
 
 ## Tests
 

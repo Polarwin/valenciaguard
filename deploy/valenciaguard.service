@@ -8,8 +8,10 @@ User=justin
 Group=justin
 WorkingDirectory=/home/justin/Projects/valenciaguard
 EnvironmentFile=/home/justin/Projects/valenciaguard/.env
-# ROOT_PATH=/valenciaguard is read from the EnvironmentFile (.env)
-ExecStart=/home/justin/Projects/valenciaguard/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8473 --workers 2
+# App serves at root (ROOT_PATH= in .env); public access is via the frp
+# tunnel from machine 103 -> Frankfurt -> Caddy (valenciaguard.duckdns.org),
+# so uvicorn must listen on all interfaces for 103 to reach it.
+ExecStart=/home/justin/Projects/valenciaguard/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8473 --workers 2
 Restart=on-failure
 RestartSec=5
 
