@@ -1,7 +1,7 @@
 """Seed the database with demo data.
 
 Usage:  .venv/bin/python -m scripts.seed
-Credentials created:  admin / admin123   (admin)
+Credentials created:  admin / admin123   (superuser — agency boss)
                       owner1 / owner123  (owner portal, Chinese UI)
 """
 import sys
@@ -27,7 +27,7 @@ def main() -> None:
             print("Database already seeded (users exist). Aborting.")
             return
 
-        admin = User(username="admin", password_hash=hash_password("admin123"), role="admin")
+        admin = User(username="admin", password_hash=hash_password("admin123"), role="superuser")
         owner_user = User(username="owner1", password_hash=hash_password("owner123"), role="owner")
         session.add_all([admin, owner_user])
         session.commit()
@@ -108,7 +108,7 @@ def main() -> None:
 
         session.commit()
         print("Seed complete.")
-        print("  admin  / admin123   (panel de administración)")
+        print("  admin  / admin123   (superusuario — panel de administración)")
         print("  owner1 / owner123   (portal del propietario, 中文)")
 
 

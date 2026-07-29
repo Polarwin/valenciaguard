@@ -48,32 +48,55 @@ def test_delete_self_rejected(admin_client):
     assert resp.status_code == 400
 
 
-def test_delete_last_admin_rejected(admin_client, client):
-    # create a second admin, delete the original with it (allowed), then the
-    # remaining admin cannot be removed (it is the last one — and oneself)
-    assert _add_user(admin_client, "admin2", role="admin").status_code == 303
+def test_admin_promoted_to_superuser_by_migration(admin_client):
+    # conftest runs init_db() after seeding: the oldest admin is promoted
     with Session(engine) as s:
-        admin1 = s.exec(select(User).where(User.username == "admin")).first()
-        admin2 = s.exec(select(User).where(User.username == "admin2")).first()
-        admin1_id, admin2_id = admin1.id, admin2.id
+        assert s.exec(select(User).where(User.username == "admin")).first().role == "superuser"
+        assert s.exec(select(User).where(User.username == "staff1")).first().role == "admin"
 
-    assert _login(client, "admin2", "password123").status_code == 303
-    csrf = get_csrf(client, "/users")
-    # deleting the other admin while two exist is allowed
-    resp = client.post(f"/users/{admin1_id}/delete", data={"csrf_token": csrf},
-                       follow_redirects=False)
-    assert resp.status_code == 303
-    # now admin2 is the last admin: deleting it must fail (self + last admin)
-    csrf = get_csrf(client, "/users")
-    resp = client.post(f"/users/{admin2_id}/delete", data={"csrf_token": csrf},
-                       follow_redirects=False)
+
+def test_employee_cannot_create_employee(staff_client):
+    resp = _add_user(staff_client, "emp_forbidden", role="admin")
     assert resp.status_code == 400
-    # restore the original admin user for other tests
     with Session(engine) as s:
-        from app.auth import hash_password
-        s.add(User(id=admin1_id, username="admin",
-                   password_hash=hash_password("admin123"), role="admin"))
-        s.commit()
+        assert not s.exec(select(User).where(User.username == "emp_forbidden")).first()
+
+
+def test_employee_cannot_reset_or_delete_staff(staff_client):
+    with Session(engine) as s:
+        admin_id = s.exec(select(User).where(User.username == "admin")).first().id
+    resp = staff_client.post(f"/users/{admin_id}/reset", data={
+        "password": "brandnewpass99", "csrf_token": get_csrf(staff_client, "/users"),
+    }, follow_redirects=False)
+    assert resp.status_code == 403
+    resp = staff_client.post(f"/users/{admin_id}/delete",
+                             data={"csrf_token": get_csrf(staff_client, "/users")},
+                             follow_redirects=False)
+    assert resp.status_code == 403
+
+
+def test_employee_manages_owner_accounts(staff_client):
+    assert _add_user(staff_client, "owner_by_staff", role="owner").status_code == 303
+    with Session(engine) as s:
+        uid = s.exec(select(User).where(User.username == "owner_by_staff")).first().id
+    resp = staff_client.post(f"/users/{uid}/reset", data={
+        "password": "brandnewpass99", "csrf_token": get_csrf(staff_client, "/users"),
+    }, follow_redirects=False)
+    assert resp.status_code == 200
+    resp = staff_client.post(f"/users/{uid}/delete",
+                             data={"csrf_token": get_csrf(staff_client, "/users")},
+                             follow_redirects=False)
+    assert resp.status_code == 303
+
+
+def test_superuser_manages_employees(admin_client):
+    assert _add_user(admin_client, "emp_by_super", role="admin").status_code == 303
+    with Session(engine) as s:
+        uid = s.exec(select(User).where(User.username == "emp_by_super")).first().id
+    resp = admin_client.post(f"/users/{uid}/delete",
+                             data={"csrf_token": get_csrf(admin_client, "/users")},
+                             follow_redirects=False)
+    assert resp.status_code == 303
 
 
 def test_reset_password(admin_client):

@@ -70,6 +70,9 @@ def create_user(
         return fail(_t("users.err_password_short"))
     if role not in ("admin", "owner"):
         return fail(_t("users.err_role_invalid"))
+    if role == "admin" and user.role != "superuser":
+        # only the superuser (agency boss) creates employee accounts
+        return fail(_t("users.err_forbidden"))
 
     link_owner = None
     if role == "owner" and owner_id:
@@ -104,6 +107,8 @@ def reset_password(
     target = session.get(User, user_id)
     if not target:
         raise HTTPException(404, _t("users.err_not_found"))
+    if target.role in ("admin", "superuser") and user.role != "superuser":
+        raise HTTPException(403, _t("users.err_forbidden"))
     if len(password) < MIN_PASSWORD_LEN:
         raise HTTPException(400, _t("users.err_password_short"))
     target.password_hash = hash_password(password)
@@ -130,10 +135,10 @@ def delete_user(
         raise HTTPException(404, _t("users.err_not_found"))
     if target.id == user.id:
         raise HTTPException(400, _t("users.err_delete_self"))
-    if target.role == "admin":
-        admin_count = len(session.exec(select(User).where(User.role == "admin")).all())
-        if admin_count <= 1:
-            raise HTTPException(400, _t("users.err_delete_last_admin"))
+    if target.role in ("admin", "superuser") and user.role != "superuser":
+        raise HTTPException(403, _t("users.err_forbidden"))
+    # invariant: the last superuser can never be removed — only superusers may
+    # delete staff accounts, and nobody can delete themselves
     # unlink any owner profile pointing at this user
     owner = session.exec(select(Owner).where(Owner.user_id == target.id)).first()
     if owner:

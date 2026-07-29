@@ -28,9 +28,10 @@ def setup_db():
     init_db()
     with Session(engine) as session:
         admin = User(username="admin", password_hash=hash_password("admin123"), role="admin")
+        staff = User(username="staff1", password_hash=hash_password("staff123"), role="admin")
         owner_user = User(username="owner1", password_hash=hash_password("owner123"), role="owner")
         other_user = User(username="owner2", password_hash=hash_password("owner123"), role="owner")
-        session.add_all([admin, owner_user, other_user])
+        session.add_all([admin, staff, owner_user, other_user])
         session.commit()
         session.refresh(owner_user)
         session.refresh(other_user)
@@ -45,6 +46,9 @@ def setup_db():
         session.add(Property(address="Calle Colón 18, 3ºA", owner_id=owner.id, status="occupied"))
         session.add(Property(address="Calle Ruzafa 5, 2ºB", owner_id=other.id, status="occupied"))
         session.commit()
+    # second init_db run triggers the superuser migration: the oldest admin
+    # ("admin") is promoted, "staff1" stays a plain employee
+    init_db()
     yield
 
 
@@ -70,7 +74,16 @@ def _login(client: TestClient, username: str, password: str):
 
 @pytest.fixture()
 def admin_client(client):
+    """Logged in as the superuser (seeded admin, promoted by the migration)."""
     resp = _login(client, "admin", "admin123")
+    assert resp.status_code == 303
+    return client
+
+
+@pytest.fixture()
+def staff_client(client):
+    """Logged in as a plain employee (admin role, not superuser)."""
+    resp = _login(client, "staff1", "staff123")
     assert resp.status_code == 303
     return client
 

@@ -101,10 +101,19 @@ def require_user(user: Optional[User] = Depends(get_current_user)) -> User:
 
 
 def require_admin(user: Optional[User] = Depends(get_current_user)) -> User:
+    """Staff area guard: admins and superusers (superuser inherits staff UI)."""
     if not user:
         raise _redirect("/login")
-    if user.role != "admin":
+    if user.role not in ("admin", "superuser"):
         raise _redirect("/owner-portal" if user.role == "owner" else "/login")
+    return user
+
+
+def require_superuser(user: Optional[User] = Depends(get_current_user)) -> User:
+    if not user:
+        raise _redirect("/login")
+    if user.role != "superuser":
+        raise _redirect("/owner-portal" if user.role == "owner" else "/dashboard")
     return user
 
 

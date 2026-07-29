@@ -7,19 +7,21 @@
   {% for u in users %}
   <tr>
     <td>{{ u.username }}{{ ' ' ~ t("users.you") if u.id == user.id }}</td>
-    <td>{{ u.role }}</td>
+    <td>{{ t("users.role_superuser") if u.role == "superuser" else u.role }}</td>
     <td>{{ owner_by_user.get(u.id).name if owner_by_user.get(u.id) else '—' }}</td>
     <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
     <td>
+      {% if user.role == "superuser" or u.role == "owner" %}
       <form method="post" action="{{ prefix }}/users/{{ u.id }}/reset" class="inline">
         <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
         <input name="password" id="pw-{{ u.id }}" class="small-input" minlength="8" required placeholder="{{ t('users.new_placeholder') }}">
         <button type="button" class="link" onclick="genPw('pw-{{ u.id }}')">{{ t("users.generate") }}</button>
         <button type="submit" class="link">{{ t("users.reset") }}</button>
       </form>
+      {% endif %}
     </td>
     <td>
-      {% if u.id != user.id %}
+      {% if u.id != user.id and (user.role == "superuser" or u.role == "owner") %}
       <form method="post" action="{{ prefix }}/users/{{ u.id }}/delete" class="inline"
             onsubmit="return confirm('{{ t('users.confirm_delete', username=u.username) }}')">
         <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
@@ -38,7 +40,9 @@
   <label>{{ t("users.role") }}
     <select name="role">
       <option value="owner">owner</option>
+      {% if user.role == "superuser" %}
       <option value="admin">admin</option>
+      {% endif %}
     </select>
   </label>
   <label>{{ t("users.password_label") }}
