@@ -67,3 +67,29 @@ pre.answer, pre.letter { background: #fff; border: 1px solid #e4e7eb; border-rad
 .lang-switch a { color: #cfe0f0; }
 .nav form.inline { margin-left: 0.5rem; }
 .lang-switch-login { text-align: center; margin-top: 1rem; font-size: 0.85rem; }
+
+/* ---- Mobile (phones) ---- */
+@media (max-width: 720px) {
+  .nav {
+    flex-wrap: wrap; gap: 0.6rem 0.9rem;
+    padding: 0.6rem 0.8rem; font-size: 0.95rem;
+    overflow-x: auto;
+  }
+  .nav .brand { margin-right: 0; width: 100%; }
+  .lang-switch { margin-left: 0; }
+  .container { padding: 1rem 0.7rem; }
+  h1 { font-size: 1.3rem; }
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cards { flex-direction: column; }
+  .card { width: 100%; }
+  .form, .form input, .form select, .form textarea { max-width: none; width: 100%; }
+  input, select, textarea, button, .btn { min-height: 44px; font-size: 1rem; }
+  button, .btn { width: 100%; }
+  form.inline button, form.inline .btn, button.link { width: auto; }
+  .form.inline-form { flex-direction: column; align-items: stretch; }
+  .form.inline-form input, .form.inline-form select { width: 100%; }
+  dl.grid { grid-template-columns: 1fr; }
+  dl.grid dt { margin-top: 0.4rem; }
+  .login-box { width: auto; max-width: 340px; margin: 0 1rem; }
+  .small-input { width: 8em; }
+}

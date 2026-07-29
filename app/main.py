@@ -86,6 +86,17 @@ def static_files(file_path: str):
         raise HTTPException(status_code=404)
     return FileResponse(full)
 
+
+@app.get("/sw.js", include_in_schema=False)
+def service_worker():
+    # served from root so the worker gets scope "/", which a /static/ mount
+    # could not provide
+    return FileResponse(
+        STATIC_DIR / "sw.js",
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"},
+    )
+
 for r in (auth.router, properties.router, tenants.router, contracts.router,
           rent.router, issues.router, documents.router, owners.router,
           ai.router, portal.router, users.router):
@@ -94,9 +105,9 @@ for r in (auth.router, properties.router, tenants.router, contracts.router,
 
 @app.get("/", include_in_schema=False)
 def root(user: User | None = Depends(require_user)):
-    if user.role == "admin":
-        return redirect("/dashboard")
-    return redirect("/owner-portal")
+    if user.role == "owner":
+        return redirect("/owner-portal")
+    return redirect("/dashboard")
 
 
 @app.get("/set-language/{lang}", include_in_schema=False)
