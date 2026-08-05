@@ -1,8 +1,9 @@
 """Seed the database with demo data.
 
 Usage:  .venv/bin/python -m scripts.seed
-Credentials created:  admin / admin123   (superuser — agency boss)
-                      owner1 / owner123  (owner portal, Chinese UI)
+Credentials created:  admin / admin123      (superuser — agency boss)
+                      empleado / empleado123 (employee — office staff)
+                      owner1 / owner123     (owner portal, Chinese UI)
 """
 import sys
 from datetime import date
@@ -28,8 +29,9 @@ def main() -> None:
             return
 
         admin = User(username="admin", password_hash=hash_password("admin123"), role="superuser")
+        empleado = User(username="empleado", password_hash=hash_password("empleado123"), role="admin")
         owner_user = User(username="owner1", password_hash=hash_password("owner123"), role="owner")
-        session.add_all([admin, owner_user])
+        session.add_all([admin, empleado, owner_user])
         session.commit()
         session.refresh(owner_user)
 
@@ -108,8 +110,9 @@ def main() -> None:
 
         session.commit()
         print("Seed complete.")
-        print("  admin  / admin123   (superusuario — panel de administración)")
-        print("  owner1 / owner123   (portal del propietario, 中文)")
+        print("  admin    / admin123     (superusuario — panel de administración)")
+        print("  empleado / empleado123  (empleado — gestión diaria)")
+        print("  owner1   / owner123     (portal del propietario, 中文)")
 
 
 if __name__ == "__main__":
